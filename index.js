@@ -12,7 +12,7 @@ $(function () {
             showColumns: true,          // 是否显示内容列下拉框。
             showToggle: true,           // 是否显示切换视图（table/card）按钮。
             striped: true,              // 是否显示行间隔色
-            clickToSelect: true,        // 是否启用点击选中行
+            clickToSelect: false,        // 是否启用点击选中行
             cache: false,               // 是否使用缓存
             uniqueId: "ID",             // 每一行的唯一标识，一般为主键列
             pageNumber: 1,              // 初始化加载第一页，默认第一页
@@ -69,7 +69,7 @@ $(function () {
             ],
             locale: 'zh-CN', //中文支持,
         })
-
+        
         //操作栏的格式化
         function actionFormatter(value, row, index) {
             // console.log(value, row, index)
@@ -79,21 +79,20 @@ $(function () {
                 "', view='view')\" title='查看'><span class='glyphicon glyphicon-search'></span></a>";
             result += "<a href='javascript:;' class='btn btn-xs blue' onclick=\"EditViewById('" + id +
                 "')\" title='编辑'><span class='glyphicon glyphicon-pencil'></span></a>";
-            result += "<a href='javascript:;' class='btn btn-xs red' onclick=\"DeleteByIds('" + id +
-                "')\" title='删除'><span class='glyphicon glyphicon-remove'></span></a>";
+            result += "<a href='javascript:;' class='btn btn-xs red btn_delete' title='删除'><span class='glyphicon glyphicon-remove delBtn2'></span></a>";
             return result;
         }
 
+        // 请求服务数据时所传参数
         function queryParams (params) {
             console.log(params)
-            return {
+            var temp = {
                 // pageSize: params.limit,
                 // pageIndex: params.pageNumber,
-                // Name: $('#search_name').val(),
-                Tel: $('#search_tel').val(),
                 Name: $('#search_name').val(),
-
+                Tel: $('#search_tel').val()
             }
+            return temp
         }
         // 查询按钮事件
         $('#search_btn').click(function () {console.log(7777)
@@ -213,7 +212,7 @@ $(function () {
         })
 
         // 删除按钮与修改按钮的出现与消失
-        $('#table tbody').change(() => {console.log(666)
+        $('#table tbody').change(() => {
             var dataArrLen = $('#table .selected').length
             
             if (dataArrLen === 1) {
@@ -234,6 +233,59 @@ $(function () {
                 }, 400)
             }
         })
+        
+        // 删除按钮事件
+        $('.bootstrap-table').on('click', '#btn_delete, span', function (e) {
+            var e = e || window.event
+            e = e.srcElement || e.target
+            // 单个删除按钮
+            if ($(e).hasClass('delBtn2')) {
+                console.log($(e).closest('tr'))
+                $(e).closest('tr').remove()
+            }
+
+            // 可多个删除的按钮
+            if ($(e).hasClass('delBtn') || $(e).hasClass('delBtn1')) {
+                // 获取勾选的数量
+                // console.log(dataArr)
+                var dataArr = $('#table').bootstrapTable('getSelections')
+                
+                $('.popup_de .show_msg').text('确定要删除该用户吗?')
+                $('.popup_de').addClass('bbox');
+
+                $('.popup_de .btn_submit').one('click', function () {
+
+                    // 遍历勾选中的行数，找到它的id，并传到后台删掉，由于我这里不做后台数据库的操作，也就没有写了
+                    var ID = []
+                    
+                    for (var i = 0; i < dataArr.length; i++) {
+                        ID[i] = dataArr[i].ID
+                    }
+                    // $.get('url', {Id: ID}, (data)=>{})
+                    $('.popup_de .show_msg').text('删除成功！')
+                    $('.popup_de .btn_cancel').css('display', 'none') // 隐藏取消按钮
+                    $('.popup_de').addClass('bbox')
+                    $('.popup_de .btn_submit').one('click', function () {
+                        $('.popup_de').removeClass('bbox')
+
+                        //获取勾选的input.并删除
+                        var $checked = $('.bs-checkbox>input').filter   (':checked')
+                        $checked.closest('tr').remove();
+                    })
+
+                    
+                })
+                // 弹出框取消按钮事件
+                $('.popup_de .btn_cancel').click(function () {
+                    $('.popup_de').removeClass('bbox');
+                })
+                // 弹出框关闭按钮事件
+                $('.popup_de .popup_close').click(function () {
+                    $('.popup_de').removeClass('bbox');
+                })
+            }
+        })
+
     }
 })
 
