@@ -37,31 +37,6 @@ $(function () {
                 this.$addForm.data('bootstrapValidator').resetForm(true)
             })
 
-            // 删除按钮与修改按钮的出现与消失
-            this.$table.change(() => {
-                var dataArrLen = $('#table .selected').length
-        
-                if (dataArrLen === 1) {
-                    $('#btn_edit').css('display', 'block').removeClass('fadeOutRight').addClass('animated fadeInRight');
-                } else {
-                    $('#btn_edit').addClass('fadeOutRight')
-                    setTimeout( () => {
-                        $('#btn_edit').css('display', 'none')
-                    }, 400)
-                }
-        
-                if (dataArrLen >= 1) {
-                    $('#btn_delete').css('display', 'block').removeClass('fadeOutRight').addClass('animated fadeInRight')
-                } else {
-                    $('#btn_delete').addClass('fadeOutRight')
-                    setTimeout( () => {
-                        $('#btn_delete  ').css('display', 'none')
-                    }, 400)
-                }
-            })
-
-            
-
             // 初始化
             this.TableInit(obj)
 
@@ -142,6 +117,9 @@ $(function () {
             })
             // 等待数据渲染以后才能做怎增增删改查
             this.del()
+
+            // 删除按钮与修改按钮的出现与消失
+            this.change()
         };
 
         // 操作栏的格式化
@@ -268,7 +246,12 @@ $(function () {
                 e = e.srcElement || e.target
                 // 单个删除按钮
                 if ($(e).hasClass('delBtn2')) {
-                    console.log($(e).closest('tr'))
+                    // console.log($(e).closest('tr').find('input').prop('checked', !this.checked))
+
+                    // 修改状态
+                    // $(e).closest('tr').find('input').prop('checked', false)
+                    $(e).closest('tr').removeClass('selected')
+                    this.checkboxLen()
                     $(e).closest('tr').remove()
                 }
         
@@ -276,7 +259,7 @@ $(function () {
                 if ($(e).hasClass('delBtn') || $(e).hasClass('delBtn1')) {
                     // 获取勾选的数量
                     // console.log(dataArr)
-                    var dataArr = this.$tablek.bootstrapTable('getSelections')
+                    var dataArr = this.$table.bootstrapTable('getSelections')
                     
                     $('.popup_de .show_msg').text('确定要删除该用户吗?')
                     $('.popup_de').addClass('bbox');
@@ -294,15 +277,18 @@ $(function () {
                         $('.popup_de .show_msg').text('删除成功！')
                         $('.popup_de .btn_cancel').hide() // 隐藏取消按钮
                         
-                        $('.popup_de .btn_submit').one('click', function () {
+                        $('.popup_de .btn_submit').one('click', () => {
                             $('.popup_de .btn_cancel').show()
                             $('.popup_de').removeClass('bbox')
                             //获取勾选的input.并删除
                             var $checked = $('.bs-checkbox>input').filter   (':checked')
+
+                            $(e).closest('tr').removeClass('selected')
+                            this.checkboxLen()
                             $checked.closest('tr').remove();
                         })
         
-                    })
+                    }.bind(this))
                     // 弹出框取消按钮事件
                     $('.popup_de .btn_cancel').click(function () {
                         $('.popup_de').removeClass('bbox');
@@ -313,8 +299,36 @@ $(function () {
                     })
                 }
             })
-        }
+        };
 
+        // 删除按钮与修改按钮的出现与消失
+        change () {
+            this.$table.children('tbody').change(() => {
+                this.checkboxLen()
+            })
+        };
+
+        checkboxLen () {
+            var dataArrLen = $('#table .selected').length
+
+            if (dataArrLen === 1) {
+                $('#btn_edit').css('display', 'block').removeClass('fadeOutRight').addClass('animated fadeInRight');
+            } else {
+                $('#btn_edit').addClass('fadeOutRight')
+                setTimeout( () => {
+                    $('#btn_edit').css('display', 'none')
+                }, 400)
+            }
+    
+            if (dataArrLen >= 1) {
+                $('#btn_delete').css('display', 'block').removeClass('fadeOutRight').addClass('animated fadeInRight')
+            } else {
+                $('#btn_delete').addClass('fadeOutRight')
+                setTimeout( () => {
+                    $('#btn_delete  ').css('display', 'none')
+                }, 400)
+            }
+        }
     }
 
     var tableLise = new TableDemo()
